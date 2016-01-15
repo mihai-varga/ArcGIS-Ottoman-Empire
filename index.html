@@ -18,7 +18,6 @@
         }
         
         body {
-            background-color: #EFEFDE;
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
@@ -73,15 +72,15 @@
         function init() {
             map = new esri.Map("map", {
                 basemap: "topo",
-                center: [-81.299, 39.3],
+                center: [27.2986677, 31.4256458],
                 slider: false,
-                zoom: 2
+                zoom: 3
             });
 
             var content = "<b>Category: </b>${CAT} <br> <b>Wind Speed: </b>${WIND_KTS}<br><b>Pressure: </b>${PRESSURE}<br>";
             var infoTemplate = new esri.InfoTemplate("${NAME}", content);
 
-            hurricaneTracks = new esri.layers.FeatureLayer("http://services5.arcgis.com/0i2vXFvaQPu7PMBt/arcgis/rest/services/Ottoman_Empire/FeatureServer/0", {
+            hurricaneTracks = new esri.layers.FeatureLayer("http://services5.arcgis.com/0i2vXFvaQPu7PMBt/ArcGIS/rest/services/Ottoman_Empire/FeatureServer/0", {
                 mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
                 outFields: ["*"],
                 infoTemplate: infoTemplate
@@ -89,13 +88,13 @@
 
             map.infoWindow.resize(125, 105);
 
-            //flUpdateEndHandle = dojo.connect(hurricaneTracks, "onUpdateEnd", updateSlider);
+            flUpdateEndHandle = dojo.connect(hurricaneTracks, "onUpdateEnd", updateSlider);
 
             //display map initally for 1976
             var timeExtent = new esri.TimeExtent();
             timeExtent.startTime = new Date("1/1/1976 UTC");
             timeExtent.endTime = new Date("12/31/1976 UTC");
-            //hurricaneTracks.setTimeDefinition(timeExtent);
+            hurricaneTracks.setTimeDefinition(timeExtent);
 
             map.addLayers([hurricaneTracks]);
         }
@@ -118,6 +117,7 @@
 
             var featureLayer = this; //because this is fired after all features have been updated and we are working with a featureLayer in snapshot mode we can be assured that featureLayer.graphics has all the features that match the layer and time defintion.
 
+            console.log(featureLayer);
             var dateField = featureLayer.timeInfo.startTimeField;
             var minDate = new Date(featureLayer.graphics[0].attributes[dateField]);
             var maxDate = new Date(featureLayer.graphics[0].attributes[dateField]);
