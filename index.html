@@ -16,18 +16,18 @@
             margin: 0;
             padding: 0;
         }
-        
+
         body {
             overflow: hidden;
             font-family: "Trebuchet MS";
         }
-        
+
         .pane {
             border: solid 1px #9CAA9C;
             margin: 5px;
             padding: 5px;
         }
-        
+
         #header {
             background-color: #EFEFDE;
             color: #9CAA9C;
@@ -41,7 +41,7 @@
             margin-top: 0px;
             margin-bottom: 0px;
         }
-        
+
         #banner {
             height: 40px;
             width: 100%;
@@ -64,7 +64,7 @@
         dojo.require("esri.dijit.Legend");
 
         var flUpdateEndHandle;
-        var hurricaneTracks;
+        var ottomanEmpire;
         var map;
         var timeSlider;
         var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -80,7 +80,7 @@
             var content = "<b>Category: </b>${CAT} <br> <b>Wind Speed: </b>${WIND_KTS}<br><b>Pressure: </b>${PRESSURE}<br>";
             var infoTemplate = new esri.InfoTemplate("${NAME}", content);
 
-            hurricaneTracks = new esri.layers.FeatureLayer("http://services5.arcgis.com/0i2vXFvaQPu7PMBt/ArcGIS/rest/services/Ottoman_Empire/FeatureServer/0", {
+            ottomanEmpire = new esri.layers.FeatureLayer("http://services5.arcgis.com/0i2vXFvaQPu7PMBt/ArcGIS/rest/services/Ottoman_Empire/FeatureServer/0", {
                 mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
                 outFields: ["*"],
                 infoTemplate: infoTemplate
@@ -88,28 +88,14 @@
 
             map.infoWindow.resize(125, 105);
 
-            flUpdateEndHandle = dojo.connect(hurricaneTracks, "onUpdateEnd", updateSlider);
+            flUpdateEndHandle = dojo.connect(ottomanEmpire, "onUpdateEnd", updateSlider);
 
-            //display map initally for 1976
             var timeExtent = new esri.TimeExtent();
-            timeExtent.startTime = new Date("1/1/1976 UTC");
-            timeExtent.endTime = new Date("12/31/1976 UTC");
-            hurricaneTracks.setTimeDefinition(timeExtent);
+            timeExtent.startTime = new Date("1/1/1300 UTC");
+            timeExtent.endTime = new Date("1/1/2000 UTC");
+            ottomanEmpire.setTimeDefinition(timeExtent);
 
-            map.addLayers([hurricaneTracks]);
-        }
-
-        function yearChange() {
-            //if the slider is currently playing stop and reset it
-            if (timeSlider.playing) {
-                timeSlider.pause();
-            }
-            var year = dojo.byId('year').value;
-            var timeExtent = new esri.TimeExtent();
-            timeExtent.startTime = new Date("1/1/" + year + " UTC");
-            timeExtent.endTime = new Date("12/31/" + year + " UTC");
-            flUpdateEndHandle = dojo.connect(hurricaneTracks, "onUpdateEnd", updateSlider);
-            hurricaneTracks.setTimeDefinition(timeExtent);
+            map.addLayers([ottomanEmpire]);
         }
 
         function updateSlider() {
@@ -117,27 +103,11 @@
 
             var featureLayer = this; //because this is fired after all features have been updated and we are working with a featureLayer in snapshot mode we can be assured that featureLayer.graphics has all the features that match the layer and time defintion.
 
-            console.log(featureLayer);
-            var dateField = featureLayer.timeInfo.startTimeField;
-            var minDate = new Date(featureLayer.graphics[0].attributes[dateField]);
-            var maxDate = new Date(featureLayer.graphics[0].attributes[dateField]);
+            var timeExtent = new esri.TimeExtent();
+            timeExtent.startTime = new Date("1/1/1300 UTC");
+            timeExtent.endTime = new Date("1/1/2000 UTC");
 
-            dojo.forEach(featureLayer.graphics, function(graphic) {
-                var currentDate = new Date(graphic.attributes[dateField]);
-                if (currentDate.getTime() <= minDate.getTime()) {
-                    minDate = currentDate;
-                }
-
-                if (currentDate.getTime() > maxDate.getTime()) {
-                    maxDate = currentDate;
-                }
-            });
-
-            var currentYearTimeExtent = new esri.TimeExtent();
-            currentYearTimeExtent.startTime = minDate;
-            currentYearTimeExtent.endTime = maxDate;
-            updateTimeString(currentYearTimeExtent);
-
+            updateTimeString(timeExtent);
 
             if (dijit.byId('timeSlider')) {
                 dijit.byId('timeSlider').destroy();
@@ -158,25 +128,12 @@
             //the time frame.
             dojo.connect(timeSlider, "onTimeExtentChange", function(timeExtent) {
                 updateTimeString(timeExtent);
-                query.timeExtent = timeExtent;
-                featureLayer.queryFeatures(query, function(featureSet) {
-                    var uniqueHurricaneNames = {};
-                    dojo.forEach(featureSet.features, function(feature) {
-                        var hurricaneName = feature.attributes.NAME;
-                        uniqueHurricaneNames[hurricaneName] = uniqueHurricaneNames[hurricaneName] + 1 || 1;
-                    });
-                    var content = "<br><i>";
-                    for (var hurricane in uniqueHurricaneNames) {
-                        content = content + hurricane + "<br>";
-                    }
-                    dojo.byId("activeHurricanes").innerHTML = content + "</i>";
-                });
             });
 
             map.setTimeSlider(timeSlider);
-            timeSlider.setThumbCount(2);
+            timeSlider.setThumbCount(1);
 
-            timeSlider.createTimeStopsByTimeInterval(currentYearTimeExtent, 1, 'esriTimeUnitsMonths', {
+            timeSlider.createTimeStopsByTimeInterval(timeExtent, 20, 'esriTimeUnitsYears', {
                 resetStartTime: true
             });
 
@@ -192,10 +149,8 @@
         }
 
         function updateTimeString(timeExtent) {
-            var startTime = monthNames[timeExtent.startTime.getUTCMonth()] + " " + timeExtent.startTime.getUTCDate();
-            var endTime = monthNames[timeExtent.endTime.getUTCMonth()] + " " + timeExtent.endTime.getUTCDate();
-
-            dojo.byId("daterange").innerHTML = "View hurricanes from <b>" + startTime + "</b> to <b>" + endTime + "</b>";
+            var time = timeExtent.endTime.getUTCFullYear();
+            dojo.byId("daterange").innerHTML = "The Ottoman Empire in <b>" + time + "</b>";
         }
 
         function startSlider() {
