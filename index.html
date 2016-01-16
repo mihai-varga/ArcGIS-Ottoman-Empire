@@ -82,7 +82,8 @@
             ottomanEmpire = new esri.layers.FeatureLayer("http://services5.arcgis.com/0i2vXFvaQPu7PMBt/ArcGIS/rest/services/Ottoman_Empire/FeatureServer/0", {
                 mode: esri.layers.FeatureLayer.MODE_SNAPSHOT,
                 outFields: ["*"],
-                infoTemplate: infoTemplate
+                infoTemplate: infoTemplate,
+                opacity: 0.7
             });
 
             map.infoWindow.resize(125, 105);
