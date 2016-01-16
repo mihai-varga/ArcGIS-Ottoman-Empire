@@ -129,8 +129,13 @@
             timeSlider.setThumbMovingRate(500);
             timeSlider.startup();
 
-            var labels = dojo.map(timeSlider.timeStops, function(timeStop) {
-                return monthNames[timeStop.getUTCFullYear()];
+            var labels = dojo.map(timeSlider.timeStops, function(timeStop, i) {
+                if (i % 2 === 0) {
+                    return timeStop.getUTCFullYear();
+                }
+                else {
+                    return "";
+                }
             });
             timeSlider.setLabels(labels);
         }
