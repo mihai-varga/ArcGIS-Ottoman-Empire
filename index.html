@@ -54,6 +54,7 @@
         };
     </script>
     <script src="https://js.arcgis.com/3.15/"></script>
+    <script type="text/javascript" src="History.js"></script>
     <script>
         dojo.require("esri.map");
         dojo.require("esri.layers.FeatureLayer");
@@ -144,7 +145,7 @@
         function updateTimeString(timeExtent) {
             var year = timeExtent.endTime.getUTCFullYear();
             dojo.byId("daterange").innerHTML = "The Ottoman Empire in <b>" + year + "</b>";
-            // TODO display some info abut what happened in this year / period
+            dojo.byId("right").innerHTML = details(year);
         }
 
         function startSlider() {
